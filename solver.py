@@ -5,16 +5,21 @@ import numpy as np
 import json
 
 class WordleSolver():
-    def __init__(self, data='data/wordle_list.txt', frequencies='data/letter_frequencies.json') -> None:
+    def __init__(self, data='data/wordle_list.txt', frequencies='data/letter_frequencies.json', verbose=True) -> None:
         self.data = pandas.read_csv(data, header=None,names=['word'] )
         with open(frequencies, 'r') as f:
             self.frequencies = json.load(f)
         # self.data['weights'] = 
-        print(self.frequencies)
         self.data['weights'] = self.data['word'].apply(self.get_frequency_of_word)
         self.data.sort_values(by='weights', ascending=False, inplace=True)
+        self.verbose=verbose
 
-        print(self.data.head())
+        if(self.verbose):
+            print("Weighting with frequencies:")
+            print(self.frequencies)
+        if(self.verbose):
+            print("Word list:")
+            print(self.data.head())
 
 
     def get_frequency_of_word(self,word):
@@ -27,7 +32,10 @@ class WordleSolver():
 
     def guess(self):
         try:
-            return self.data['word'].iloc[0]
+            guess = self.data['word'].iloc[0]
+            if(self.verbose):
+                print("New guess:", guess)
+            return guess
         except:
             raise ValueError("ERROR: No word found matching these conditions!")
 
@@ -40,7 +48,8 @@ class WordleSolver():
                 This word contains this letter: {'a':[4], 'q':[1]} -> there is an a and a q 
                     somewhere in the word, NOT in position 4/1 though
         '''
-        print(f"Starting with {self.data.shape[0]} words in list")
+        if(self.verbose):
+            print(f"Starting with {self.data.shape[0]} words in list")
 
         # first parse the exact matches
         for i, letter in enumerate(exact):
@@ -55,4 +64,5 @@ class WordleSolver():
         for letter in doesnt_contain:
             self.data = self.data.loc[~self.data['word'].str.contains(letter)]
 
-        print(f"{self.data.shape[0]} words remaining")
+        if(self.verbose):
+            print(f"{self.data.shape[0]} words remaining")

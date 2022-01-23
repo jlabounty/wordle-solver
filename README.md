@@ -1,1 +1,3 @@
 # wordle-solver
+
+A quick piece of code i put together to test my selenium skills. This took about 1:30 to write. 10 minutes of that was setting up the logic in solver.py and the remaining time was banging my head against selenium...
