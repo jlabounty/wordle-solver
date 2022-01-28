@@ -73,6 +73,10 @@ class WordlePlayer():
             elif(evaluation=='correct'):
                 exact += letter
 
+            for x in exact:
+                if(x in absent):
+                    absent = absent.replace(x,'')
+
         return exact, wrong_positon, absent
 
     def tearDown(self):
