@@ -4,12 +4,19 @@ import numpy as np
 import json
 
 class WordleSolver():
-    def __init__(self, data='data/wordle_list.txt', frequencies='data/letter_frequencies.json', verbose=True) -> None:
+    def __init__(self, data='data/wordle_list.txt', 
+                       frequencies='data/letter_frequencies_by_place.json', 
+                       verbose=True, weight_by_place=True) -> None:
         self.data = pandas.read_csv(data, header=None,names=['word'] )
         with open(frequencies, 'r') as f:
             self.frequencies = json.load(f)
-        # self.data['weights'] = 
-        self.data['weights'] = self.data['word'].apply(self.get_frequency_of_word)
+    
+        if(weight_by_place):
+            # weighting generated from word list itself based on frequency and position
+            self.data['weights'] = self.data['word'].apply(self.get_frequency_of_word_by_position)
+        else:
+            # simple weighing based on english language
+            self.data['weights'] = self.data['word'].apply(self.get_frequency_of_word)
         self.data.sort_values(by='weights', ascending=False, inplace=True)
         self.verbose=verbose
 
@@ -20,12 +27,25 @@ class WordleSolver():
             print("Word list:")
             print(self.data.head())
 
+        self.data_orig = self.data.copy()
+
+    def reset(self):
+        self.data = self.data_orig.copy()
+
 
     def get_frequency_of_word(self,word):
         # word = word.split("")[1:-1]
         # print(word)
         word = list(set(word)) #don't weight the same letter more than once
         weights = [self.frequencies[x] for x in word]
+        # print(weights)
+        return np.sum(weights)
+
+    def get_frequency_of_word_by_position(self,word):
+        # word = word.split("")[1:-1]
+        # print(word)
+        word = list(set(word)) #don't weight the same letter more than once
+        weights = [self.frequencies[str(i)][x] if x in self.frequencies[str(i)] else 0 for i,x in enumerate(word)]
         # print(weights)
         return np.sum(weights)
 
@@ -37,6 +57,25 @@ class WordleSolver():
             return guess
         except:
             raise ValueError("ERROR: No word found matching these conditions!")
+
+    def eval_guess(self, truth, guess):
+        exact = ''
+        doesnt_contain = ''
+        contains = {}
+        
+        for i, x in enumerate(guess):
+            if(x == truth[i]):
+                exact += x 
+            elif x in truth:
+                exact += '.'
+                contains[x] = [i]
+            else:
+                doesnt_contain += x
+                exact += '.'
+
+        return exact, contains, doesnt_contain
+
+
 
     def parse_guess(self, exact='.....', contains=Dict, doesnt_contain=''):
         '''
