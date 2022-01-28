@@ -5,8 +5,9 @@ import json
 
 class WordleSolver():
     def __init__(self, data='data/wordle_list.txt', 
-                       frequencies='data/letter_frequencies_by_place.json', 
-                       verbose=True, weight_by_place=True) -> None:
+                       frequencies='data/letter_frequencies.json', 
+                       verbose=True, 
+                       weight_by_place=False) -> None:
         self.data = pandas.read_csv(data, header=None,names=['word'] )
         with open(frequencies, 'r') as f:
             self.frequencies = json.load(f)
